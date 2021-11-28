@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpserver
+  labels:
+    app: httpserver
+    version: 2.0.3
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: httpserver
+      version: 2.0.3
+  template:
+    metadata:
+      labels:
+        app: httpserver
+        version: 2.0.3
+    spec:
+      containers:
+        - name: httpserver
+          image: jikebang/httpserver:2.0.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          securityContext:
+            runAsUser: 1000
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 1024Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          env:
+            - name: VERSION
+              value: "2.0.3"
+          volumeMounts:
+            - name: app
+              mountPath: /app/app.json
+              subPath: app.json
+      volumes:
+        - name: app
+          configMap:
+            name: httpserver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpserver
+  labels:
+    app: httpserver
+    service: httpserver
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+      name: http
+  selector:
+    app: httpserver
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: httpserver
+  namespace: default
+data:
+  app.json: |
+    {"name":"我是一个配置名称"}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gateway
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  tls:
+    - hosts:
+        - httpserver.com
+      secretName: httpserver-tls
+  rules:
+    - host: httpserver.com
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: httpserver
+                port:
+                  number: 80
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: httpserver-tls
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMyRENDQWNBQ0NRQ3JuVzc1bkdDYTdEQU5CZ2txaGtpRzl3MEJBUXNGQURBdU1SY3dGUVlEVlFRRERBNW8KZEhSd2MyVnlkbVZ5TG1OdmJURVRNQkVHQTFVRUNnd0thSFIwY0hObGNuWmxjakFlRncweU1URXhNamd3T0RNNQpOREZhRncweU1qRXhNamd3T0RNNU5ERmFNQzR4RnpBVkJnTlZCQU1NRG1oMGRIQnpaWEoyWlhJdVkyOXRNUk13CkVRWURWUVFLREFwb2RIUndjMlZ5ZG1WeU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0MKQVFFQTF4OTBOOUdRcEZnL2ZXb1UvMWxaUEdSVG1VRWpNV2RjUkIwSTVpbE9pTkFPYWx3YzR6T3dCRlJGbTRCTgo2R2pnTFoydlpQTzI1L0g1QWVYYW9aRVA0VzY0RVJyOXEyYWxMRTlReXpoUVU0V2lnN1JRZlFBUThzUFhDS2VBCllpUWVWM1hMRmRHQW9kZ2lyZHFUTmROQ1E3OFIvTXc3NERYeWcxZVNjdFBQRjlLRnhNZTJ3TElKeEUwOVFFbGkKMFQ3TXMwMnVneDlPcTBOZzBvNExnblhWU0pnNW5YSmRhclBvaFlvOTdabXFCSGhFMVM3S2E4cEhSVFJvWFRzMApZUWs0ZGdidGp2aHNSdW1vWElySWhZOFQyaXMxTkFGSUl0M3pxMExWNExiRWlqUzlELzJhYkNuWkVZR2Q1NHZzCjMremtGZHZrbHU4cXhpdGVPRmdXZ0hlRVpRSURBUUFCTUEwR0NTcUdTSWIzRFFFQkN3VUFBNElCQVFCN3VKb2IKbDNLMXE1R2lGQzhSS0xuWkt2dldhMzhJWFJzYWFDMk9NTUpQcGo2cUt4dC80VWh4VGtmTWg3R0hKNTFKc1NQYQpHdHhVMytXT2xWcUU5eE1jL0pNTHlKWThnOW9xOXJVajJvaGozbzl2c3NIcnQ5VHlTZGV5VEpBRHBCUXNad1RkCmxXenp2WXpRT3VHcTh2MkxWcTI3VmRrWjNuaWgxMi9LRW02djJWVm1uQTY4OTl1MXZxcHNac1ZQR1hQenFGUXYKOUVPc0pLemNxeHFnUGZwNGNIekNOZUNIbjR4dFJQbGQ3QVdnQ1FqMUl5UlN2N09HVHlPWXM4ZFE5ZmNudm1KeQpSRUR0ZUI5bGg1SENuUjcyRGtRT2RPZG9ONWdkb2wxVVVWQjI4TXYrUVA5TE8zRDRZaDZTbGdNYmdBeVhMREVRCldkUUhiQmcwTHUyNHJ5Zy8KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+  tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRRFhIM1EzMFpDa1dEOTkKYWhUL1dWazhaRk9aUVNNeFoxeEVIUWptS1U2STBBNXFYQnpqTTdBRVZFV2JnRTNvYU9BdG5hOWs4N2JuOGZrQgo1ZHFoa1EvaGJyZ1JHdjJyWnFVc1QxRExPRkJUaGFLRHRGQjlBQkR5dzljSXA0QmlKQjVYZGNzVjBZQ2gyQ0t0CjJwTTEwMEpEdnhIOHpEdmdOZktEVjVKeTA4OFgwb1hFeDdiQXNnbkVUVDFBU1dMUlBzeXpUYTZESDA2clEyRFMKamd1Q2RkVkltRG1kY2wxcXMraUZpajN0bWFvRWVFVFZMc3ByeWtkRk5HaGRPelJoQ1RoMkJ1Mk8rR3hHNmFoYwppc2lGanhQYUt6VTBBVWdpM2ZPclF0WGd0c1NLTkwwUC9acHNLZGtSZ1ozbmkremY3T1FWMitTVzd5ckdLMTQ0CldCYUFkNFJsQWdNQkFBRUNnZ0VCQUlkNkpwM1VtOHYwUzUrM0JCdy83OFBweHdBNEZtclJsampMTkVTRzlRK1MKUDlIWnl0T0hSSzJsU09VQ2E0NFhKajkwRS9aMnlkVE8vYXVsVHdmN0xFNGpoVVk0Z2xMRVpQYy95RGtEY1FyNAptUDFxdkZuTWhkL3RWK242V3c3emdpeEFZYktPNnZ5QittMFV2eXJocmRTdWF5eVNqbzdJU3I5T2trdEFleWFiClpTdzQ0SHlTSHNjdHFvSlhrNG1sdmRxTkkycFh3K2tiekZ2UUlMSU5yTWhINytxbkFkWGRxVmsya2pndTZnd0gKakRvOWdRckVsNVprN0k3QVBKTjZuRWVKYXY4OW90Sm9kd1h0YWJuMlVJdUFZTjhxUVRINytJUElXMTIrNHdRRApUd2g4eWFVYjNtQTNLMEMxdjVzejVJaVlNVnJKVDVpUGllSDd2M1J2akcwQ2dZRUErcC8xOHUxQWhYbm1xNzdxCnBtbDJ1UytmWm12VDJlRW1nSDBJMkI0ZGRQaUh1WWxnTHYrUGdrZ045OUw1dUhtM3B3QTR4dWdqUnMzNUtucmIKU2w1K2JvYnRxVm1PMER3blI3R21IZU9hc29MaFhjamJ6b0JFQy9HYTdteHNzVnlSYzNYanpaRnZWbkd3aksyNgoxNDdPQ0xiOW9zdVZoeW83b1E2SmNTQTVzcjhDZ1lFQTI3eVNhMmxKejg0eWJtWUkzOFBaNndKekdsQVVGWUdEClhYNFoxaldMVm50ZDF0NGxaTnAxQzFYckFaZHg4eVlaWGpOZzhFcHNWM044OGpvWmJwRklEbmN5dE1tNXFQRnoKYlo5U21vV3JwVGVaamhUeEhFd0RCNjBsWWNBVlpjOVpubkZCL0czVGgwNkZvTnFqUm14Vm53OUZtdWFySWZtOAowMEQxSmljNkpkc0NnWUF5OS9UOHdtTXN3ZTIzWDh3NHE1b0pielhyam1JM0hTTEhYcVk5eldJUU43cmljSjJ1CjhTb3VSSmtTblVWTHp2VWFjV0Vha25zYUd5bGhDanN1bEtrQnNVOEQ4Y0twZHBKR2NrcG1LYk44T2tHNjRPNVMKd0tNV0NyeUhZR1Y2Ykdqb0lrR0J2T0gzb29kVkZMKzZ0c0FQNWFjUFJIZlVWVEpyUHBtVStBakQ0UUtCZ0FVbQpaa2dlTDV5dk9IOWQ1TmRadjhIQ1RQQlE4Q2VRNFlOUGNVdVQ5YkFSTkNIVkV3dEtFM1F3ajFGNk96RjNzeUNDCkU4T04rdndSdU52MGdLUVd3NW1UTVowTEhVN1lXZHczMzdlL2FrWjFCeVJOV1ZsUWJzRy9UU0Q5WDRNRFdSWmQKa1M1WlpKdkhPMXFKeFVuaFFDQjZPeWRtUUp5TFBlRzFwQWxBNGh3QkFvR0FlcmZqNnFjU3VVYi94dTRvUDVLYgpIV0JKYzB3SEpGMk5FN1FiOFFLeDdiL1NBQnBWejNzUXFCMm1tTzVKTG9qc2dsQW1Oa2NwK2RNWEFNMDBWckJtCjFPeU1sSmxXL3B4dHJ6Q3NvY1E2NWRKZGxYM3VHOGN2MTVGOWJkKytSeThnSzVkZDNqOW5KMzZON3hzdzlmREgKdzdiblV6ZmpHYzFuMWtWUGhDZkZHaG89Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+type: kubernetes.io/tls
