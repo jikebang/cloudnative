@@ -61,3 +61,7 @@ make deploy
 ```
 sudo sed -i '$a 127.0.0.1 httpserver.com' /etc/hosts
 ```
+## 查看httpserver配置(ngress-nginx-controller映射本地端口 443=>30373)
+```
+curl https://httpserver.com:30373/config
+```
