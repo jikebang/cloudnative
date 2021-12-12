@@ -9,3 +9,22 @@
 作业提交链接： https://jinshuju.net/f/z0Z07s
 
 提交截止时间：12 月 12 日 23:59
+
+# 答题
+### 1，2. 题见代码
+### 3.见k8s.yaml
+```
+make deploy
+```
+请求httpserver服务
+
+curl http://httpserver/hello
+### 4.Promethus 查询 与 Grafana Dashboard
+```
+histogram_quantile(0.95, sum(rate(httpserver_execution_latency_seconds_bucket[5m])) by (le))
+histogram_quantile(0.90, sum(rate(httpserver_execution_latency_seconds_bucket[5m])) by (le))
+histogram_quantile(0.50, sum(rate(httpserver_execution_latency_seconds_bucket[5m])) by (le))
+```
+Grafana Dashboard
+
+![grafana](images/grafana.jpg)
