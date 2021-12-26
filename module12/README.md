@@ -46,9 +46,13 @@ kubectl apply -f istio-specs.yaml
 ```
 k get svc -nistio-system
 # istio-ingressgateway   LoadBalancer   10.108.82.159
+# tracing                ClusterIP      10.96.244.167
 ```
 ## 请求服务
 ```
 curl -H "Host: demo.cncv.vip" 10.108.82.159/hello -v
 ```
-## 查询
+## 查询tracing
+```
+http://10.96.244.167
+```
