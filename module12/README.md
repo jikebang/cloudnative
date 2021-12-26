@@ -33,7 +33,7 @@ kubectl get ns -L istio-injection
 ```
 kubectl apply -f jaeger.yaml
 ```
-```
+
 ## 部署3个service并支持自动注入调用关系为demo->demo1->demo2
 ```
 make deploy
