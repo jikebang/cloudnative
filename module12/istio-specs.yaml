@@ -10,7 +10,7 @@ spec:
   http:
     - match:
         - uri:
-            exact: /demo
+            exact: /hello
       route:
         - destination:
             host: demo
@@ -26,7 +26,7 @@ spec:
     istio: ingressgateway
   servers:
     - hosts:
-        - '*'
+        - 'demo.cncv.vip'
       port:
         name: http-demo
         number: 80

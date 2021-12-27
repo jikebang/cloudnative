@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: httpserver
-          image: jikebang/httpserver:3.0.0
+          image: jikebang/httpserver:3.0.1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -42,7 +42,7 @@ spec:
               memory: 128Mi
           env:
             - name: VERSION
-              value: "3.0.0"
+              value: "3.0.1"
             - name: CALL_NAME
               value: "demo1"
           volumeMounts:
@@ -101,7 +101,7 @@ spec:
     spec:
       containers:
         - name: httpserver
-          image: jikebang/httpserver:3.0.0
+          image: jikebang/httpserver:3.0.1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -123,7 +123,7 @@ spec:
               memory: 128Mi
           env:
             - name: VERSION
-              value: "3.0.0"
+              value: "3.0.1"
             - name: CALL_NAME
               value: "demo2"
           volumeMounts:
@@ -174,7 +174,7 @@ spec:
     spec:
       containers:
         - name: httpserver
-          image: jikebang/httpserver:3.0.0
+          image: jikebang/httpserver:3.0.1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -196,7 +196,7 @@ spec:
               memory: 128Mi
           env:
             - name: VERSION
-              value: "3.0.0"
+              value: "3.0.1"
           volumeMounts:
             - name: app
               mountPath: /app/app.json

@@ -1,4 +1,4 @@
-export VERSION=3.0.0
+export VERSION=3.0.1
 
 build:
 	docker build -t jikebang/httpserver:${VERSION} .

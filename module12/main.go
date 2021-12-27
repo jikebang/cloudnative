@@ -60,7 +60,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	delay := randInt(10, 2000)
 	time.Sleep(time.Millisecond * time.Duration(delay))
 	if callName != "" {
-		req, err := http.NewRequest("GET", "http://"+callName, nil)
+		req, err := http.NewRequest("GET", "http://"+callName+"/hello", nil)
 		if err != nil {
 			fmt.Printf("%s", err)
 		}
